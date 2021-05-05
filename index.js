@@ -16,6 +16,9 @@ const defaultOptions = {
   acquireTimeoutMillis: 100
 }
 
+// patch-code to make connection global so we can use it to close them during SIGTERM
+global.koaMongoPoolConnection = [];
+
 function mongo (connOptions, confOptions = {}) {
   connOptions = Object.assign({}, defaultOptions, connOptions)
   let mongoUrl = connOptions.uri || connOptions.url
@@ -36,6 +39,7 @@ function mongo (connOptions, confOptions = {}) {
       useUnifiedTopology: true
     }, confOptions))
       .then(client => {
+        global.koaMongoPoolConnection.push(client);
         debug('Successfully connected to: ' + mongoUrl)
         return client
       })
